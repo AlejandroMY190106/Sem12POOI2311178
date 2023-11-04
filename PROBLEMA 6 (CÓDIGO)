@@ -1,0 +1,338 @@
+import java.util.*;
+class LAN {
+    private List<Node> nodos = new ArrayList<>();
+    private Topologia topologia;
+
+    public LAN(Topologia topologia) {
+        this.topologia = topologia;
+    }
+
+    public void agregarNodo(Node nodo) {
+        nodos.add(nodo);
+        nodo.setLAN(this);
+    }
+
+    public void quitarNodo(Node nodo) {
+        nodos.remove(nodo);
+        nodo.setLAN(null);
+    }
+
+    public void configurarRed(Topologia topologia) {
+        this.topologia = topologia;
+    }
+
+    public void establecerTamanoPaquete(int tamano) {
+        Paquete.setTamano(tamano);
+    }
+
+    public void enviarPaquete(Node origen, Node destino, String mensaje) {
+        Paquete paquete = new Paquete(origen, destino, mensaje);
+        topologia.enviarPaquete(this, paquete);
+    }
+
+    public void difundirPaquete(Node origen, String mensaje) {
+        Paquete paquete = new Paquete(origen, null, mensaje);
+        topologia.difundirPaquete(this, paquete);
+    }
+
+    public void listarNodos() {
+        System.out.println("Nodos en la LAN:");
+        for (Node nodo : nodos) {
+            System.out.println(nodo.getNombre());
+        }
+    }
+
+    public void calcularTiempoPromedioPaquete() {
+        int tiempoTotalPaquete = 0;
+        int totalPaquetes = 0;
+
+        for (Node nodo : nodos) {
+            tiempoTotalPaquete += nodo.getTiempoTotalPaquete();
+            totalPaquetes += nodo.getTotalPaquetes();
+        }
+
+        if (totalPaquetes > 0) {
+            double tiempoPromedioPaquete = (double) tiempoTotalPaquete / totalPaquetes;
+            System.out.println("Tiempo Promedio de Paquete: " + tiempoPromedioPaquete + " ms");
+        } else {
+            System.out.println("Aún no se han enviado paquetes en la LAN.");
+        }
+    }
+
+    public List<Node> getNodos() {
+        return nodos;
+    }
+}
+
+abstract class Topologia {
+    abstract void enviarPaquete(LAN lan, Paquete paquete);
+    abstract void difundirPaquete(LAN lan, Paquete paquete);
+}
+
+
+class TopologiaEstrella extends Topologia {
+    @Override
+    void enviarPaquete(LAN lan, Paquete paquete) {
+       
+        for (Node nodo : lan.getNodos()) {
+            if (nodo != paquete.getDestino()) {
+                int tiempoTransmision = nodo.transmitirPaquete(paquete);
+                paquete.registrarTiempoTransmision(tiempoTransmision);
+            }
+        }
+    }
+
+    @Override
+    void difundirPaquete(LAN lan, Paquete paquete) {
+        
+        for (Node nodo : lan.getNodos()) {
+            if (nodo != paquete.getOrigen()) {
+                int tiempoTransmision = nodo.transmitirPaquete(paquete);
+                paquete.registrarTiempoTransmision(tiempoTransmision);
+            }
+        }
+    }
+}
+
+
+class TopologiaBus extends Topologia {
+    @Override
+    void enviarPaquete(LAN lan, Paquete paquete) {
+        
+        for (Node nodo : lan.getNodos()) {
+            if (nodo != paquete.getDestino()) {
+                int tiempoTransmision = nodo.transmitirPaquete(paquete);
+                paquete.registrarTiempoTransmision(tiempoTransmision);
+            }
+        }
+    }
+
+    @Override
+    void difundirPaquete(LAN lan, Paquete paquete) {
+        
+        for (Node nodo : lan.getNodos()) {
+            int tiempoTransmision = nodo.transmitirPaquete(paquete);
+            paquete.registrarTiempoTransmision(tiempoTransmision);
+        }
+    }
+}
+
+
+class Node {
+    private String nombre;
+    private LAN lan;
+    private int tiempoTotalPaquete = 0;
+    private int totalPaquetes = 0;
+
+    public Node(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setLAN(LAN lan) {
+        this.lan = lan;
+    }
+
+    public int transmitirPaquete(Paquete paquete) {
+     
+        int tiempoTransmision = (int) (Math.random() * 10); 
+        tiempoTotalPaquete += tiempoTransmision;
+        totalPaquetes++;
+        return tiempoTransmision;
+    }
+
+    public int getTiempoTotalPaquete() {
+        return tiempoTotalPaquete;
+    }
+
+    public int getTotalPaquetes() {
+        return totalPaquetes;
+    }
+}
+
+
+class Paquete {
+    private Node origen;
+    private Node destino;
+    private String mensaje;
+    private int tiempoTransmision;
+
+    public Paquete(Node origen, Node destino, String mensaje) {
+        this.origen = origen;
+        this.destino = destino;
+        this.mensaje = mensaje;
+    }
+
+    public Node getOrigen() {
+        return origen;
+    }
+
+    public Node getDestino() {
+        return destino;
+    }
+
+    public void registrarTiempoTransmision(int tiempo) {
+        this.tiempoTransmision += tiempo;
+    }
+
+    public static void setTamano(int tamano) {
+       
+    }
+}
+
+
+class Acciones {
+    public static void listarNodos(LAN lan) {
+        lan.listarNodos();
+    }
+
+    public static void agregarNodo(LAN lan, String nombreNodo) {
+        Node nuevoNodo = new Node(nombreNodo);
+        lan.agregarNodo(nuevoNodo);
+    }
+
+    public static void quitarNodo(LAN lan, String nombreNodo) {
+        for (Node nodo : lan.getNodos()) {
+            if (nodo.getNombre().equals(nombreNodo)) {
+                lan.quitarNodo(nodo);
+                break;
+            }
+        }
+    }
+
+    public static void configurarRed(LAN lan, int opcion) {
+        if (opcion == 1) {
+            lan.configurarRed(new TopologiaEstrella());
+        } else if (opcion == 2) {
+            lan.configurarRed(new TopologiaBus());
+        } else {
+            System.out.println("Opción no válida.");
+        }
+    }
+
+    public static void establecerTamanoPaquete(LAN lan, int tamano) {
+        lan.establecerTamanoPaquete(tamano);
+    }
+
+    public static void enviarPaquete(LAN lan, String nombreOrigen, String nombreDestino, String mensaje) {
+        Node origen = null;
+        Node destino = null;
+
+        for (Node nodo : lan.getNodos()) {
+            if (nodo.getNombre().equals(nombreOrigen)) {
+                origen = nodo;
+            }
+            if (nodo.getNombre().equals(nombreDestino)) {
+                destino = nodo;
+            }
+        }
+
+        if (origen != null && destino != null) {
+            lan.enviarPaquete(origen, destino, mensaje);
+            System.out.println("Paquete enviado de " + origen.getNombre() + " a " + destino.getNombre() + ".");
+        } else {
+            System.out.println("Nodo de origen y/o destino no encontrados.");
+        }
+    }
+
+    public static void difundirPaquete(LAN lan, String nombreOrigenDifusion, String mensajeDifusion) {
+        Node origenDifusion = null;
+
+        for (Node nodo : lan.getNodos()) {
+            if (nodo.getNombre().equals(nombreOrigenDifusion)) {
+                origenDifusion = nodo;
+                break;
+            }
+        }
+
+        if (origenDifusion != null) {
+            lan.difundirPaquete(origenDifusion, mensajeDifusion);
+            System.out.println("Mensaje difundido desde " + origenDifusion.getNombre() + ".");
+        } else {
+            System.out.println("Nodo de origen no encontrado.");
+        }
+    }
+
+    public static void calcularTiempoPromedioPaquete(LAN lan) {
+        lan.calcularTiempoPromedioPaquete();
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        LAN lan = new LAN(new TopologiaEstrella());
+
+        Scanner scanner = new Scanner(System.in);
+        boolean continuar = true;
+
+        while (continuar) {
+            System.out.println("Elige una acción:");
+            System.out.println("1. Enumerar nodos");
+            System.out.println("2. Agregar nodo");
+            System.out.println("3. Quitar nodo");
+            System.out.println("4. Configurar red (Estrella o Bus)");
+            System.out.println("5. Establecer tamaño del paquete");
+            System.out.println("6. Enviar paquete");
+            System.out.println("7. Difundir paquete");
+            System.out.println("8. Calcular tiempo promedio de paquete");
+            System.out.println("9. Salir");
+
+            int opcion = scanner.nextInt();
+
+            switch (opcion) {
+                case 1:
+                    Acciones.listarNodos(lan);
+                    break;
+                case 2:
+                    System.out.println("Ingresa el nombre del nuevo nodo:");
+                    String nombreNodo = scanner.next();
+                    Acciones.agregarNodo(lan, nombreNodo);
+                    break;
+                case 3:
+                    System.out.println("Ingresa el nombre del nodo a quitar:");
+                    String nodoAQuitar = scanner.next();
+                    Acciones.quitarNodo(lan, nodoAQuitar);
+                    break;
+                case 4:
+                    System.out.println("Elige la topología (1 para Estrella, 2 para Bus):");
+                    int topologia = scanner.nextInt();
+                    Acciones.configurarRed(lan, topologia);
+                    break;
+                case 5:
+                    System.out.println("Ingresa el tamaño del paquete (en bytes):");
+                    int tamanoPaquete = scanner.nextInt();
+                    Acciones.establecerTamanoPaquete(lan, tamanoPaquete);
+                    break;
+                case 6:
+                    System.out.println("Ingresa el nombre del nodo de origen:");
+                    String nombreOrigen = scanner.next();
+                    System.out.println("Ingresa el nombre del nodo de destino:");
+                    String nombreDestino = scanner.next();
+                    System.out.println("Ingresa el mensaje del paquete:");
+                    String mensaje = scanner.next();
+                    Acciones.enviarPaquete(lan, nombreOrigen, nombreDestino, mensaje);
+                    break;
+                case 7:
+                    System.out.println("Ingresa el nombre del nodo de origen:");
+                    String nombreOrigenDifusion = scanner.next();
+                    System.out.println("Ingresa el mensaje de difusión:");
+                    String mensajeDifusion = scanner.next();
+                    Acciones.difundirPaquete(lan, nombreOrigenDifusion, mensajeDifusion);
+                    break;
+                case 8:
+                    Acciones.calcularTiempoPromedioPaquete(lan);
+                    break;
+                case 9:
+                    continuar = false;
+                    break;
+                default:
+                    System.out.println("Opción no válida.");
+            }
+        }
+
+        scanner.close();
+    }
+}
