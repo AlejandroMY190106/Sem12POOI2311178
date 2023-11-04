@@ -1,0 +1,49 @@
+public class Main {
+    public static void main(String[] args) {
+
+        Cadena cadena1 = new Cadena("Hola, mundo!");
+        Cadena cadena2 = new Cadena();
+
+        cadena1.visualizar();
+        System.out.println("Longitud de cadena1: " + cadena1.getLongitud());
+
+        cadena2.visualizar();
+        System.out.println("Longitud de cadena2: " + cadena2.getLongitud());
+
+        System.out.println("Carácter en el índice 3 de cadena1: " + cadena1.caracter(3));
+        System.out.println("Carácter en el índice 20 de cadena1: " + cadena1.caracter(20));
+    }
+}
+public class Cadena {
+    private int longitud;
+    private String contenido;
+
+    public Cadena(String contenido) {
+        this.contenido = contenido;
+        this.longitud = contenido.length();
+    }
+
+    public Cadena() {
+        this.contenido = "";
+        this.longitud = 0;
+    }
+
+    public int getLongitud() {
+        return longitud;
+    }
+
+    public String getContenido() {
+        return contenido;
+    }
+
+    public void visualizar() {
+        System.out.println(contenido);
+    }
+
+    public int caracter(int i) {
+        if (i >= 0 && i < longitud) {
+            return contenido.charAt(i);
+        } else {
+            return -1;
+        }
+    }}
