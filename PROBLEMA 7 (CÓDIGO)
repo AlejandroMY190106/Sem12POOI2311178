@@ -1,0 +1,79 @@
+class Empleado {
+    protected String nombre;
+    protected int edad;
+    protected double salarioBase;
+
+    public Empleado(String nombre, int edad, double salarioBase) {
+        this.nombre = nombre;
+        this.edad = edad;
+        this.salarioBase = salarioBase;
+    }
+
+    public double calcularSalario() {
+        return salarioBase;
+    }
+
+    public void despedir() {
+        System.out.println("Empleado " + nombre + " ha sido despedido.");
+    }
+
+    public void darDeAlta() {
+        System.out.println("Empleado " + nombre + " ha sido dado de alta.");
+    }
+
+    public void jubilarse() {
+        System.out.println("Empleado " + nombre + " se ha jubilado.");
+    }
+}
+
+class Supervisor extends Empleado {
+    protected double bonoSupervisor;
+
+    public Supervisor(String nombre, int edad, double salarioBase, double bonoSupervisor) {
+        super(nombre, edad, salarioBase);
+        this.bonoSupervisor = bonoSupervisor;
+    }
+
+    @Override
+    public double calcularSalario() {
+        return salarioBase + bonoSupervisor;
+    }
+
+    public void promocionar() {
+        System.out.println("Empleado " + nombre + " ha sido promocionado a Supervisor.");
+    }
+}
+
+class Director extends Supervisor {
+    private double bonoDirector;
+
+    public Director(String nombre, int edad, double salarioBase, double bonoSupervisor, double bonoDirector) {
+        super(nombre, edad, salarioBase, bonoSupervisor);
+        this.bonoDirector = bonoDirector;
+    }
+
+    @Override
+    public double calcularSalario() {
+        return salarioBase + bonoSupervisor + bonoDirector;
+    }
+
+    public void otorgarPrima() {
+        System.out.println("Se ha otorgado una prima al Director " + nombre);
+    }
+}
+
+public class Empresa {
+    public static void main(String[] args) {
+        Empleado empleado = new Empleado("Juan", 30, 30000);
+        Supervisor supervisor = new Supervisor("Ana", 35, 40000, 5000);
+        Director director = new Director("Carlos", 40, 50000, 6000, 10000);
+
+        System.out.println("Salario de Empleado: $" + empleado.calcularSalario());
+        System.out.println("Salario de Supervisor: $" + supervisor.calcularSalario());
+        System.out.println("Salario de Director: $" + director.calcularSalario());
+
+        empleado.despedir();
+        supervisor.promocionar();
+        director.otorgarPrima();
+    }
+}
