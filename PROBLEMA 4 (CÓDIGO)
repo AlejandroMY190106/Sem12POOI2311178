@@ -1,0 +1,19 @@
+public class Main {
+    public static void main(String[] args) {
+        Hora horaActual = new Hora(8, 30, 45);
+
+        System.out.println("Hora actual:");
+        horaActual.visualizar();
+
+        horaActual.avanzar(2, 45, 15);
+
+        System.out.println("Hora después de avanzar:");
+        horaActual.visualizar();
+
+        horaActual.ponerACero();
+
+        System.out.println("Hora después de poner a cero:");
+        horaActual.visualizar();
+    }
+}
+
